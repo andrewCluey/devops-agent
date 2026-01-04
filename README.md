@@ -66,6 +66,15 @@ export MODEL_DEPLOYMENT_NAME="gpt-4o-mini"
 pip install azure-ai-projects --pre
 pip install openai azure-identity python-dotenv
 
+## Azure devops pipeline
+
+The pipeline template can be used to integrate this into an Azure Devops pipeline.
+This requires the build service account to have permissions to contribute to pull requests (PullRequestContribute).
+
+The pipeline will take the AI Agents summary, and write this as a comment in the PR. It will also save the summary as a file named output.md.
+
+The pipeline template incldues a bash script that sets up the DevOps agent to run the `ask-devops.py` script, by installing the libraries, runs the `git diff` and writes the diff changes to a ./changes.txt file.s
+
 ## Next Steps
 
 Add context for the agent to use. This can be a knowledgbase, to include your own best practices for writing code. maybe minimum versions of libraries, or where to check for library versions, where documentation is etc. This will give the agent a live reference point to make sure that it alwasy uses YOUR standards, not what it thinks is correct. For production implementatins, this is an important step.
