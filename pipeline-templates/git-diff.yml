@@ -1,22 +1,10 @@
-
-## run when submitting a pull request
-
-## run git diff and save contents to a changes.txt or maybe just in a var
-
-## run the ask-devops.py script, this will be in the pipeline templates repo, so will be available with the template like other scripts.
-
-## show the output in the Pipeline console while it runs this step, but also in a markdown file and/or save in the PR summary.
-
 # ============================================
 # PR Analysis Template - ask-devops
+# requires Git 'PullRequestContribute' permission to perform this action.
 # ============================================
-
-trigger: none
-
-pr:
-  branches:
-    include:
-      - main
+parameters:
+- name: foundryEndpoint
+  type: string
 
 jobs:
 - job: AskDevOpsPRAnalysis
@@ -26,43 +14,93 @@ jobs:
 
   steps:
   # Ensure full history so git diff works
+  - checkout: pipelines
   - checkout: self
     fetchDepth: 0
+    path: sourceRepo
+    workspaceRepo: true
+    persistCredentials: true
 
-  - bash: |
-      set -euo pipefail
-
-      echo "## Determining PR target branch"
-      TARGET_BRANCH="origin/$(System.PullRequest.TargetBranch)"
-      echo "Target branch: $TARGET_BRANCH"
-
-      echo "## Generating git diff"
-      git diff "$TARGET_BRANCH"...HEAD > changes.txt
-
-      echo "## Diff size"
-      wc -l changes.txt
-
-      if [ ! -s changes.txt ]; then
-        echo "No changes detected. Exiting."
-        echo "No changes detected in PR." > output.md
-        exit 0
-      fi
-
-      echo "## Running ask-devops.py"
-      python ./scripts/ask-devops.py
-
+  - task: AzureCLI@2
     displayName: "Run ask-devops against PR diff"
+    env:
+      PROJECT_ENDPOINT: ${{ parameters.foundryEndpoint }}
+    inputs:
+      azureSubscription: asc
+      scriptLocation: inlineScript
+      scriptType: bash
+      inlineScript: |
+        set -euo pipefail
+        echo "###########"
+        echo "showing paths"
+        pwd
+        echo "showing directory contents"
+        ls
+        echo "############ ############# #############"
+        echo "Show content of pipelines Build.SourcesDirectory"
+        ls "$(Build.SourcesDirectory)/pipelines"
+        
+        echo "## Determining PR target branch"
+        TARGET_BRANCH="origin/main"
+        echo "Target branch: $TARGET_BRANCH"
+        echo "## Generating git diff"
+        git diff "$TARGET_BRANCH"...HEAD > "$(Build.SourcesDirectory)/pipelines/scripts/changes.txt"
 
-  # Publish PR Summary (Markdown rendered)
-  - bash: |
-      echo "##vso[task.uploadsummary]output.md"
+        cd "$(Build.SourcesDirectory)/pipelines/scripts"
+
+        echo "## Diff size"
+        wc -l changes.txt
+
+        if [ ! -s changes.txt ]; then
+          echo "No changes detected. Exiting."
+          echo "No changes detected in PR." > output.md
+          exit 0
+        fi
+
+        echo "## Running ask-devops.py"
+        cd "$(Build.SourcesDirectory)/pipelines/scripts"
+        pip install azure-ai-projects --pre
+        pip install openai azure-identity python-dotenv
+        python ask-devops.py
+      
+  # Publish PR Summary to PR summary (Markdown rendered)
+  #- bash: |
+  #    echo "##vso[task.uploadsummary]output.md"
+  #  displayName: "Publish analysis to PR summary"
+  
+  - task: Bash@3
     displayName: "Publish analysis to PR summary"
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd "$(Build.SourcesDirectory)/pipelines/scripts"
+        pwd
+        echo "#####"
+        ls
+        COMMENT=$(cat output.md)
+        echo $COMMENT
+  
+        ADO_API=$(echo "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/threads?api-version=7.1-preview.1")
+  
+        PR_COMMENT=$(jq --arg comment "$COMMENT" '.comments[0].content = $comment' <<< '{"comments": [{"parentCommentId": 0,"content": "","commentType": 1}],"status": 1}')
+  
+        curl --request POST "$ADO_API" \
+        --header "Content-Type: application/json" \
+        --header "Accept: application/json" \
+        --header "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+        --data "$PR_COMMENT" \
+        --verbose
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-  # Optional: upload artifacts for debugging
-  - publish: changes.txt
-    artifact: pr-diff
-    condition: always()
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: $(Build.SourcesDirectory)/pipelines/scripts/changes.txt
+      artifactName: changes.txt
+      condition: always()
 
-  - publish: output.md
-    artifact: pr-analysis
-    condition: always()
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: $(Build.SourcesDirectory)/pipelines/scripts/output.md
+      artifactName: output.md
+      condition: always()
