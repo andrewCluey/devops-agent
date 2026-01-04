@@ -1,0 +1,8 @@
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DevOps/pipeline-templates
+
+extends:
+  template: pr-ask-devops.yml@templates
