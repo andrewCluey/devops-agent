@@ -49,7 +49,7 @@ jobs:
       fi
 
       echo "## Running ask-devops.py"
-      python ask-devops.py changes.txt | tee output.md
+      python ./scripts/ask-devops.py
 
     displayName: "Run ask-devops against PR diff"
 
