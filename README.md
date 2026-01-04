@@ -6,7 +6,7 @@ Here, the example is to include this as part of a CI/CD pipeline, to summarise c
 
 ## examples
 
-The examples are not intended to be production grade code or infrastrucutre. For the most part, they have been cloned from open source repos to provide workable code examples for the agwent to analyse. Do not treat them as ready for production. They serve a purpose to give a wide array of different projects for the agent to review.
+The examples are not intended to be production grade code or infrastructure. For the most part, they have been cloned from open source repos to provide workable code examples for the agent to analyse. Do not treat them as ready for production. They serve a purpose to give a wide array of different projects for the agent to review.
 
 ## Create a new agent
 
@@ -20,18 +20,40 @@ Currently, the 'ask-devops' script reads the diff from a file named changes.txt,
 
 An Azure Foundry project
 Python 3.11 or greater
+Git
 
-## steps
+## steps to demo
 
 login to https://ai.azure.com/ and select your project, or create a new one.
 make a note of the project endpoint, the API key is not required if you are using entra authentication
 Save the endpoint url in an environment variable
 run az login
-Create an agent by clicking `start building --> create agent` or by running the devops-agent.py script
+Create an agent by clicking `start building --> create agent` or by running the devops-agent.py script. The script includes an example instruction set.
 
 With the agent created, you can now submit code to it to provide a summary.
 
-If you use the pythion script `ask-devops.py` then this will read the content of a file called `changes.txt` , that should be populated from a `git diff` command. (specifically `git diff > ./changes.txt`), this will result in the devops agent providing a summmary of the changes that Git can see. Exactly which source and target branch these changes are from depends on the git diff command used. For example:
+If you use the python script `ask-devops.py` then this will read the content of a file called `changes.txt` , that should be populated from a `git diff` command. (specifically `git diff main $branchName > ./changes.txt`), this will result in the devops agent providing a summmary of the changes that Git can see. Exactly which source and target branch these changes are from depends on the git diff command used. For example:
+
+`git diff main feature/initial > changes.txt`
+
+To use one of the example projec ts in the `./examples` directory, you can simply use local git for this. You don;t need a remote git repo just for testing how this all works.
+
+- With the foundry project and agent setup, you're good to jump straight in to the code
+- Create a new local Git repo by creating a new directory on your system and run `git init`
+- add some files, good starting places are a README.md, the `ask-devops.py` script (this is for runnign locally, not great for prod but fine for testing)
+- run `git add .` and then `git commit -am "initial" to commit these to the main branch
+- create a new branch, and switch to it. `git branch feature/code` and then `git switch feature/code`
+
+Now that you are in the new branch, go ahead and copy one of the example code projects to your repo. 
+Run a `git status` to show all the files that are now in the repo. Run `git add .` so that they are managed by Git. Run again to show all files are tracked by Git.
+
+Run `git commit -am "added exmaple code"`. The branch is now simulating an initial commit of a brand new project, where a whole load of app and/or terraform code has been committed to a branch. You now need to get the git diff into a changes.txt file (this is what the `ask-devops.py` script reads to send to the agent).
+
+run `git diff main feature/code > changes.txt`, this will populate the git diff into the chanegs.txt file.
+
+Now simply run the ask-devops.py script, `python ask-devops.py`, this pamy be `python3 ask-devops.py` depending on your systems pythin visrtual environment setup. Also make sure that the pythion requirements are installed first, either with the requirements.txt or refer to the `dependencies` section below.
+
+The agent will review the contents of the changes.txt file, as this is the a big merge (main contained none of this), the changes.txt will effectively have the whole repo. This means the agent will review all code. The script takes the repsosne and saves it to `output.md` for review.
 
 ## environment vars
 
