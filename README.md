@@ -68,3 +68,4 @@ pip install openai azure-identity python-dotenv
 
 ## Next Steps
 
+Add context for the agent to use. This can be a knowledgbase, to include your own best practices for writing code. maybe minimum versions of libraries, or where to check for library versions, where documentation is etc. This will give the agent a live reference point to make sure that it alwasy uses YOUR standards, not what it thinks is correct. For production implementatins, this is an important step.
