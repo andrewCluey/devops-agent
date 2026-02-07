@@ -14,7 +14,7 @@ Create an agent in Azure foundry, using your choice of model, but maybe if just 
 
 Once created, save the agent name, endpoint and model name using the environment vars that are defined below. You can use the `devops-agent.py` script if you wish as this will create an agent in the foundry. 
 
-Currently, the 'ask-devops' script reads the diff from a file named changes.txt, this requires a `git diff` to be saved to this file, then you can go right ahead and run `ask-devops.py`, this will submit the content of the changes.txt file to the agent. The agent has the instructions of what to do. If using the devops-agent.py script, then it will provide a summary and advice based on this content.
+You can interact with the agent using a variety of methods, but for this use case we want to integrate the agent into a pipeline. So we have a Python script called 'ask-devops.py'. This script reads the content of a file named changes.txt (the intention is that this is the result of a `git diff`). Running the `ask-devops.py` script will submit the content of the changes.txt file to the agent. The agent has been instructed to review this file, and provide a sumamry. If the agent was created using the devops-agent.py script, then it will provide a summary and advice based on the git diff content.
 
 ## pre-requisites
 
@@ -32,11 +32,13 @@ Make a note of the project endpoint, the API key is not required if you are usin
 
 With the agent created, you can now submit code to it to provide a summary.
 
-If you use the Python script `ask-devops.py` then this will read the content of a file called `changes.txt` , that should be populated from a `git diff` command. (specifically `git diff main $branchName > ./changes.txt`), this will result in the devops agent providing a summmary of the changes that Git can see. Exactly which source and target branch these changes are from depends on the git diff command used. For example:
+The script `ask-devops.py`, reads the content from a file named `changes.txt`, with the intention being that this is the result of a `git diff` command (`git diff main $branchName > ./changes.txt`). This results in the devops agent providing a summmary of the changes submitted to the specified branch when compared to the main branch. Exactly which source and target branch these changes are from depends on the git diff command used. For example:
 
 `git diff main feature/initial > changes.txt`
 
-To use one of the example projects in the `./examples` directory, you can simply use local git for this. You don't need a remote git repo for testing.
+This will compare the commited changes in the `feature/initial` branch, to the main branch.
+
+You can use one of the example projects in the `./examples` directory, with local git for this.
 
 - With the foundry project and agent setup, you're good to jump straight in to the code
 - Create a new local Git repo by creating a new directory on your system and run `git init`
