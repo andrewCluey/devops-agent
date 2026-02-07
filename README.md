@@ -18,25 +18,25 @@ Currently, the 'ask-devops' script reads the diff from a file named changes.txt,
 
 ## pre-requisites
 
-An Azure Foundry project
-Python 3.11 or greater
-Git
+- An Azure Foundry project
+- Python 3.11 or greater
+- Git
 
 ## steps to demo
 
 login to https://ai.azure.com/ and select your project, or create a new one.
-make a note of the project endpoint, the API key is not required if you are using entra authentication
-Save the endpoint url in an environment variable
-run az login
-Create an agent by clicking `start building --> create agent` or by running the devops-agent.py script. The script includes an example instruction set.
+Make a note of the project endpoint, the API key is not required if you are using entra authentication.
+- Save the endpoint url in an environment variable
+- Run az login
+- Create an agent by clicking `start building --> create agent` or by running the devops-agent.py script. The script includes an example instruction set.
 
 With the agent created, you can now submit code to it to provide a summary.
 
-If you use the python script `ask-devops.py` then this will read the content of a file called `changes.txt` , that should be populated from a `git diff` command. (specifically `git diff main $branchName > ./changes.txt`), this will result in the devops agent providing a summmary of the changes that Git can see. Exactly which source and target branch these changes are from depends on the git diff command used. For example:
+If you use the Python script `ask-devops.py` then this will read the content of a file called `changes.txt` , that should be populated from a `git diff` command. (specifically `git diff main $branchName > ./changes.txt`), this will result in the devops agent providing a summmary of the changes that Git can see. Exactly which source and target branch these changes are from depends on the git diff command used. For example:
 
 `git diff main feature/initial > changes.txt`
 
-To use one of the example projec ts in the `./examples` directory, you can simply use local git for this. You don;t need a remote git repo just for testing how this all works.
+To use one of the example projects in the `./examples` directory, you can simply use local git for this. You don't need a remote git repo for testing.
 
 - With the foundry project and agent setup, you're good to jump straight in to the code
 - Create a new local Git repo by creating a new directory on your system and run `git init`
