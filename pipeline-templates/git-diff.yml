@@ -5,6 +5,8 @@
 parameters:
 - name: foundryEndpoint
   type: string
+- name: azureServiceConnection
+  type: string
 
 jobs:
 - job: AskDevOpsPRAnalysis
@@ -26,7 +28,7 @@ jobs:
     env:
       PROJECT_ENDPOINT: ${{ parameters.foundryEndpoint }}
     inputs:
-      azureSubscription: asc
+      azureSubscription: ${{ parameters.azureServiceConnection }}
       scriptLocation: inlineScript
       scriptType: bash
       inlineScript: |
